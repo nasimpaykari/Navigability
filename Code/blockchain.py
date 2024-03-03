@@ -155,10 +155,10 @@ class Blockchain:
         self.navigability = [[0] * num_nodes for _ in range(num_nodes)]
         # List of validators with their stakes.
         self.validators = {node['name']: node['privilege'] for node in self.nodes}
+        print("Nodes: ",self.validators)
         total_token = sum(self.validators.values())
         # self.weights = {node: token / total_token  for node, token in self.validators.items()}
         validator_keys = list(self.validators.keys())
-
         for ref_node, token in self.validators.items():
             ref_index = validator_keys.index(ref_node)
             stack_weight = token / total_token
@@ -169,6 +169,7 @@ class Blockchain:
                     landmarks_weight = self.landmarks_weight(ref_node, par_node)
                     impact_factor = self.impact_factor(ref_node, par_node)
                     self.navigability[ref_index][par_index] = stack_weight * landmarks_weight * impact_factor
+        print("Navigability: ",self.navigability)
         max_nav = float('-inf')
         max_indices = (0,0)
         for i in range(num_nodes):
