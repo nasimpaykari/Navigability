@@ -86,7 +86,7 @@ def UpdateView(robot: str, comp_robot: str, Matches: list, RMatches: list):
               blockchain.nonce[robot]+=1
               if blockchain.consensus == "pos":
                  blockchain.update(robot,'common_landmark', 10)
-              elif blockchain.consensus == "poc"
+              elif blockchain.consensus == "poc":
                  blockchain.update(robot,'common_landmark', len(Matches))
                  blockchain.update(comp_robot,'common_landmark', len(RMatches))
               elif blockchain.consensus == "dpos" and Node.get_node_by_name(comp_robot).privilege > 0:
