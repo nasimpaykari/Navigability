@@ -61,7 +61,7 @@ def node_generatorIn(blockchain,modelname,robotsnum):
         elif blockchain.consensus == "pos" :
             blockchain.update(node["name"],"start", 50)
         elif blockchain.consensus == "poc" :
-            blockchain.update(node["name"],"start", 50)
+            blockchain.update(node["name"],"start", 0)
         elif blockchain.consensus == "dpos": 
             blockchain.update(node["name"],"start", 1)   
         elif blockchain.consensus == "poa" :
@@ -84,8 +84,11 @@ def UpdateView(robot: str, comp_robot: str, Matches: list, RMatches: list):
               blockchain.add_transaction(Tx_1)
               #Tx_1=[]
               blockchain.nonce[robot]+=1
-              if blockchain.consensus == "pos" or blockchain.consensus == "poc":
+              if blockchain.consensus == "pos":
                  blockchain.update(robot,'common_landmark', 10)
+              elif blockchain.consensus == "poc"
+                 blockchain.update(robot,'common_landmark', len(Matches))
+                 blockchain.update(comp_robot,'common_landmark', len(RMatches))
               elif blockchain.consensus == "dpos" and Node.get_node_by_name(comp_robot).privilege > 0:
                  blockchain.update(comp_robot,'common_landmark', 10)                   
            Tx_2=Transaction(blockchain.latest_transaction().id+1, comp_robot, comp_panoramic, robot, RMatches, blockchain.nonce[comp_robot])
