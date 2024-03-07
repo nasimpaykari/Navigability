@@ -34,7 +34,7 @@ class world():
       
       # Generate random positions for robots
       for r in range(nRobots):
-          name = f"{modelname}{r}"
+          name = f"{modelname}{r+1}"
           x = random.randrange(xrange[0]+5,xrange[1]-5)
           y = random.randrange(yrange[0]+5,yrange[1]-5)
           self.robots.append([name,[x,y]])
