@@ -21,8 +21,10 @@ class world():
       # Create the world
       self.robots = []
       self.positions = {}
-      self.landmarks = []      
+      self.landmarks = []
+      self.homelandmark = {}     
       self.makeWorld(modelname, nRobots, nLandmarks)
+      self.Home()
       
       # List to store common landmarks between robots
       self.findCommon()
@@ -46,6 +48,11 @@ class world():
           y = random.randrange(yrange[0]+5,yrange[1]-5)
           self.landmarks.append((x,y))
     
+   def Home(self):
+      for r in self.robots:
+          home_landmark = random.choice(self.landmarks)
+          self.homelandmark[r[0]] = home_landmark
+
    def move(self):
       xrange=[0,self.worldX]
       yrange=[0,self.worldY]
@@ -159,3 +166,35 @@ class world():
         plt.savefig(filename, format='pdf', bbox_inches='tight')
         plt.pause(0.1)
       return
+
+# # Create a world instance
+# w = world(modelname="P", nRobots=5, nLandmarks=20)
+
+# # Draw the initial world
+# w.drawWorld(filename="initial_world.pdf")
+
+# # show the Home position for each robot
+# print("home: ",w.homelandmark)
+
+# # Get common landmarks between two robots
+# matches, reverse_matches = w.CommonLandmarkPanos("P1", "P2")
+# print("Matches between 'P1' and 'P2':")
+# print("Matches:", matches)
+# print("Reverse Matches:", reverse_matches)
+
+# print("Robots are moved!")
+# # Move the robots
+# w.move()
+
+# # Draw the world after movement
+# w.drawWorld(filename="world_after_movement.pdf")
+
+# # Get common landmarks between two robots
+# matches, reverse_matches = w.CommonLandmarkPanos("P1", "P2")
+# print("Matches between 'P1' and 'P2':")
+# print("Matches:", matches)
+# print("Reverse Matches:", reverse_matches)
+
+# # Show movements of each robot
+# w.movements(filename="robot_movements.pdf")
+
