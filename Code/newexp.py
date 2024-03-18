@@ -37,7 +37,7 @@ sim_world = ws.world(modelName, len(team), numberoflandmarks)
 poc.initialize_blockchain()
 poc.node_generator(modelName, len(team))
 
-for i in range(0, 10):
+for i in range(0, 5):
     print(f"\nLoop number {i} has been started: \n")
     filename = f"{len(team)}_{i}_{time.ctime}"
     sim_world.drawWorld(filename)
