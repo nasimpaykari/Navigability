@@ -39,24 +39,37 @@ poc.node_generator(modelName, len(team))
 
 for i in range(0, 5):
     print(f"\nLoop number {i} has been started: \n")
-    filename = f"{len(team)}_{i}_{time.ctime}"
+    filename = f"{len(team)}_{i}_{time.ctime()}"
     sim_world.drawWorld(filename)
     for robot in team :
         robot_name = f"{modelName}{robot+1}"
-        for comp_robot in team:
-            comp_robot_name = f"{modelName}{comp_robot+1}"
-            if robot != comp_robot:
-               Matches,RMatches = sim_world.CommonLandmarkPanos(robot_name, comp_robot_name)
-               if Matches:
-                  #print(f"Common Landmarks Matches {robot_name} and {comp_robot_name}: {Matches}")
-                  poc.UpdateView(robot_name, comp_robot_name, Matches, RMatches)
+        num=random.randint(1,100)
+        print(F"Random number is {num} for {robot_name}")
+        if num > 50:
+            print(F"{robot_name} looks around")
+            for comp_robot in team:
+                comp_robot_name = f"{modelName}{comp_robot+1}"
+                if robot != comp_robot:
+                    Matches,RMatches = sim_world.CommonLandmarkPanos(robot_name, comp_robot_name)
+                    if Matches:
+                        #print(f"Common Landmarks Matches {robot_name} and {comp_robot_name}: {Matches}")
+                        poc.UpdateView(robot_name, comp_robot_name, Matches, RMatches)
         time.sleep(random.randint(1,2))
+    random_bot = random.choice(team)
+    robot_searcher = f"{modelName}{random_bot+1}"
+    print(F"{robot_searcher} looks for home")
+    targets = sim_world.see_home_of_robot(robot_searcher)
+    print(f"The list of robot who can see {robot_searcher}'s home: {targets}")
+    if targets:
+        for traget in targets:
+            # poc.shortest_paths(random_bot, traget)
+            print("Shortest paths: ",poc.shortest_paths(modelName, robot_searcher, traget))
     sim_world.move()
-filename = f"{len(team)}_moves_{time.ctime}"
+filename = f"{len(team)}_moves_{time.ctime()}"
 sim_world.movements(filename)            
-poc.metric("blockchains",time.ctime,len(team))
-poc.metric("transactions",time.ctime,len(team))
-poc.metric("blocks",time.ctime,len(team))
+poc.metric("blockchains",time.ctime(),len(team))
+poc.metric("transactions",time.ctime(),len(team))
+poc.metric("blocks",time.ctime(),len(team))
 
 
 input("Press Enter to exit...")

@@ -54,14 +54,34 @@ class world():
           self.homelandmark[r[0]] = home_landmark
 
    def move(self):
-      xrange=[0,self.worldX]
-      yrange=[0,self.worldY]
-      # Move robots to random positions within the world
-      for r in self.robots:
-          r[1][0] = random.randrange(xrange[0]+5,xrange[1]-5)
-          r[1][1] = random.randrange(yrange[0]+5,yrange[1]-5)
-          self.positions[r[0]].append((r[1][0],r[1][1]))
-      self.findCommon()
+        xrange = [0, self.worldX]
+        yrange = [0, self.worldY]
+        moved_robots = []  # List to store names of robots that moved
+
+        # Calculate maximum movement range (1/50th of the world size)
+        max_range_x = self.worldX / 5
+        max_range_y = self.worldY / 5
+
+        # Move robots to random positions within the maximum range
+        for r in self.robots:
+            should_move = random.choice([True, False])  # Randomly decide whether to move the robot
+            if should_move:
+                move_x = random.uniform(-max_range_x, max_range_x)
+                move_y = random.uniform(-max_range_y, max_range_y)
+
+                # Update robot position
+                new_x = max(min(r[1][0] + move_x, xrange[1] - 5), xrange[0] + 5)
+                new_y = max(min(r[1][1] + move_y, yrange[1] - 5), yrange[0] + 5)
+                r[1][0] = new_x
+                r[1][1] = new_y
+
+                self.positions[r[0]].append((new_x, new_y))
+                moved_robots.append(r[0])  # Record the name of the robot that moved
+
+        self.findCommon()
+
+        # Print the names of robots that moved
+        print("Robots that moved:", moved_robots)
         
     
    def findCommon(self):
@@ -118,8 +138,8 @@ class world():
        if filename:
           plt.savefig(filename, format='pdf', bbox_inches='tight')
                   
-       #plt.show()
-       plt.pause(0.1)
+       # plt.show()
+       # plt.pause(0.1)
        return
 
    def doLine(self, s,e):
@@ -166,6 +186,16 @@ class world():
         plt.savefig(filename, format='pdf', bbox_inches='tight')
         plt.pause(0.1)
       return
+  
+   def see_home_of_robot(self, robot_name):
+      robots_seeing_home = []
+      robot_home = self.homelandmark[robot_name]
+      for robot, position in self.positions.items():
+          x, y = position[-1]  # Current position of the robot
+          distance_to_home = np.hypot(robot_home[0] - x, robot_home[1] - y)
+          if distance_to_home < self.rlRange:  # If the home is within sensing range
+              robots_seeing_home.append(robot)
+      return robots_seeing_home
 
 # # Create a world instance
 # w = world(modelname="P", nRobots=5, nLandmarks=20)
@@ -197,4 +227,8 @@ class world():
 
 # # Show movements of each robot
 # w.movements(filename="robot_movements.pdf")
+
+# # See which robots can see the home of robot "P1"
+# robots_seeing_home_of_P1 = w.see_home_of_robot("P1")
+# print("Robots seeing the home of 'P1':", robots_seeing_home_of_P1)
 

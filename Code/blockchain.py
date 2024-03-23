@@ -6,7 +6,9 @@ import random
 from datetime import datetime
 import time
 import csv
-
+import os
+import heapq
+from collections import deque
 
 class Blockchain:
     """
@@ -155,31 +157,57 @@ class Blockchain:
         self.navigability = [[0] * num_nodes for _ in range(num_nodes)]
         # List of validators with their stakes.
         self.validators = {node['name']: node['privilege'] for node in self.nodes}
-        print("Nodes: ",self.validators)
+        # print("Nodes: ",self.validators)
         total_token = sum(self.validators.values())
         # self.weights = {node: token / total_token  for node, token in self.validators.items()}
         validator_keys = list(self.validators.keys())
         for ref_node, token in self.validators.items():
             ref_index = validator_keys.index(ref_node)
             stack_weight = token / total_token
-
             for par_node in self.validators.keys():
                 if ref_node != par_node:
                     par_index = validator_keys.index(par_node)
                     landmarks_weight = self.landmarks_weight(ref_node, par_node)
                     impact_factor = self.impact_factor(ref_node, par_node)
                     self.navigability[ref_index][par_index] = stack_weight * landmarks_weight * impact_factor
-        print("Navigability: ",self.navigability)
-        max_nav = float('-inf')
-        max_indices = (0,0)
-        for i in range(num_nodes):
-           for j in range(num_nodes):
-              if self.navigability[i][j] > max_nav:
-                max_nav = self.navigability[i][j]
-                max_indices = (i,j)
-        selected_validator = random.choice([validator_keys[max_indices[0]], validator_keys[max_indices[1]]])              
+        # print("Navigability: ",self.navigability)
+        # Update navigability CSV
+        self.update_navigability_csv()
+        # Update validators CSV
+        self.update_validators_csv()
+        # max_nav = float('-inf')
+        # max_indices = (0,0)
+        # for i in range(num_nodes):
+        #    for j in range(num_nodes):
+        #       if self.navigability[i][j] > max_nav:
+        #         max_nav = self.navigability[i][j]
+        #         max_indices = (i,j)
+        # selected_validator = random.choice([validator_keys[max_indices[0]], validator_keys[max_indices[1]]])
+        # Select top 3 validators based on privilege
+        
+        top_3_validators = sorted(self.validators.items(), key=lambda x: x[1], reverse=True)[:3]
+        selected_validator = random.choice(top_3_validators)[0]  # Randomly choose one from the top 3
+                 
         return selected_validator
+    
+    def update_navigability_csv(self):
+        file_exists = os.path.isfile('navigability_matrix.csv')
+        with open('navigability_matrix.csv', mode='a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                writer.writerow(['Navigability Matrix'])
+            writer.writerows(self.navigability)
+            writer.writerow([])  # Add an empty row to separate matrices
 
+    def update_validators_csv(self):
+        file_exists = os.path.isfile('validators_values.csv')
+        with open('validators_values.csv', mode='a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                writer.writerow(['Validator', 'Value'])
+            for validator, value in self.validators.items():
+                writer.writerow([validator, value])
+            writer.writerow([])
 
     def pow_mine(self):
         # Get the previous block in the chain
@@ -421,10 +449,47 @@ class Blockchain:
                     if im_factor > 9 :
                        break
         if im_factor > 0 :
-           return im_factor / 10
+           return im_factor
         else:
            return 0
-   
+    
+    def k_shortest_paths(self, modelName, start, target, k):
+        start = int(start[len(modelName):]) - 1
+        target = int(target[len(modelName):]) - 1
+        # Initialize list to store the k shortest paths
+        k_paths = []       
+        # Perform Dijkstra's algorithm k times
+        for _ in range(k):
+            # Initialize priority queue for Dijkstra's algorithm
+            pq = [(0, start, [start])]
+            # Visited set to keep track of visited nodes
+            visited = set()          
+            while pq:
+                # Pop the node with the smallest cost
+                cost, node, path = heapq.heappop(pq)
+                
+                # If the target node is reached, append the path to k_paths
+                if node == target:
+                    k_paths.append(path)
+                    break               
+                # If the node has been visited, skip it
+                if node in visited:
+                    continue              
+                # Mark the node as visited
+                visited.add(node)               
+                # Explore neighbors
+                for neighbor, weight in enumerate(self.navigability[node]):
+                    if weight != 0 and neighbor not in visited:
+                        # Calculate the new cost
+                        new_cost = cost + weight
+                        # Push the neighbor with the new cost and path to the priority queue
+                        heapq.heappush(pq, (new_cost, neighbor, path + [neighbor]))          
+            # Remove edges from navigability matrix for the found path
+            for i in range(len(path) - 1):
+                self.navigability[path[i]][path[i+1]] = 0
+                self.navigability[path[i+1]][path[i]] = 0
+        return k_paths
+
     def details(self):
         """
         Displays number of blocks in blockchain and legder .

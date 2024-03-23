@@ -207,7 +207,12 @@ def RetrievePanoramicView(robot_1: str, robot_2: str):
     #print("RetrievePanoramicView:_____________Not Found")
     #display(reference_blockchain(consensuses,blockchains),"all")
     return[],[]
-                   
+
+def shortest_paths(modelName, searcher, traget):
+    k = 3
+    paths = reference_blockchain(consensuses, blockchains).k_shortest_paths(modelName, searcher, traget, k)
+    return paths
+                  
 def broadcast(data,sent_by,type_):
     #for j in [i for i in Node.get_all_nodes() if i["name"] != sender]:
     for i in Node.get_all_nodes():
