@@ -273,38 +273,38 @@ class world():
                 robots_seeing_home.append(robot)
         return robots_seeing_home
 
-# Create a world instance
-w = world(modelname="P", nRobots=5, nLandmarks=20)
+# # Create a world instance
+# w = world(modelname="P", nRobots=5, nLandmarks=20)
 
-# Draw the initial world
-w.drawWorld(filename="initial_world.pdf")
+# # Draw the initial world
+# w.drawWorld(filename="initial_world.pdf")
 
-# show the Home position for each robot
-print("home: ",w.homelandmark)
+# # show the Home position for each robot
+# print("home: ",w.homelandmark)
 
-# Get common landmarks between two robots
-matches, reverse_matches = w.CommonLandmarkPanos("P1", "P2")
-print("Matches between 'P1' and 'P2':")
-print("Matches:", matches)
-print("Reverse Matches:", reverse_matches)
+# # Get common landmarks between two robots
+# matches, reverse_matches = w.CommonLandmarkPanos("P1", "P2")
+# print("Matches between 'P1' and 'P2':")
+# print("Matches:", matches)
+# print("Reverse Matches:", reverse_matches)
 
-print("Robots are moved!")
-# Move the robots
-w.move()
+# print("Robots are moved!")
+# # Move the robots
+# w.move()
 
-# Draw the world after movement
-w.drawWorld(filename="world_after_movement.pdf")
+# # Draw the world after movement
+# w.drawWorld(filename="world_after_movement.pdf")
 
-# Get common landmarks between two robots
-matches, reverse_matches = w.CommonLandmarkPanos("P1", "P2")
-print("Matches between 'P1' and 'P2':")
-print("Matches:", matches)
-print("Reverse Matches:", reverse_matches)
+# # Get common landmarks between two robots
+# matches, reverse_matches = w.CommonLandmarkPanos("P1", "P2")
+# print("Matches between 'P1' and 'P2':")
+# print("Matches:", matches)
+# print("Reverse Matches:", reverse_matches)
 
-# Show movements of each robot
-w.movements(filename="robot_movements.pdf")
+# # Show movements of each robot
+# w.movements(filename="robot_movements.pdf")
 
-# See which robots can see the home of robot "P1"
-robots_seeing_home_of_P1 = w.see_home_of_robot("P1")
-print("Robots seeing the home of 'P1':", robots_seeing_home_of_P1)
+# # See which robots can see the home of robot "P1"
+# robots_seeing_home_of_P1 = w.see_home_of_robot("P1")
+# print("Robots seeing the home of 'P1':", robots_seeing_home_of_P1)
 
