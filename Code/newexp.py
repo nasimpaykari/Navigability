@@ -31,7 +31,7 @@ import wavnsim as ws
     
 team = [i for i in range(0,10)]
 modelName='P'
-numberoflandmarks = 20
+numberoflandmarks = 30
 sim_world = ws.world(modelName, len(team), numberoflandmarks)
 #print("Robots : ========================")
 #print(sim_world.robots)
