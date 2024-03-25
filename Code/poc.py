@@ -209,7 +209,7 @@ def RetrievePanoramicView(robot_1: str, robot_2: str):
     return[],[]
 
 def shortest_paths(modelName, searcher, traget):
-    k = 3
+    k = 2
     paths = reference_blockchain(consensuses, blockchains).k_shortest_paths(modelName, searcher, traget, k)
     return paths
                   

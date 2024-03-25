@@ -3,8 +3,8 @@ from block import Block
 from node import Node
 import hashlib
 import random
-from datetime import datetime
 import time
+import datetime
 import csv
 import os
 import heapq
@@ -31,6 +31,7 @@ class Blockchain:
         self.pending_transactions = []
         self.nodes = {}
         self.nonce = {}
+        self.start_time = datetime.datetime.now()
         # Create the genesis block
         self.create_genesis_block()
         self.blockstimes={}
@@ -103,7 +104,7 @@ class Blockchain:
            
         if len(self.pending_transactions) != 0 and (len(self.pending_transactions) >= len(self.nodes) or delta > 40):
             #start_time = time.ctime()
-            start_time = datetime.now()
+            start_time = datetime.datetime.now()
             if self.consensus == "pow" :
                 Gen_Block = self.pow_mine()        
             elif self.consensus == "pos" :
@@ -118,7 +119,7 @@ class Blockchain:
             if Success == 1:
                 print(F"The Block number {Gen_Block} was generated based on {self.consensus}")
                 #end_time = time.ctime()
-                end_time = datetime.now()
+                end_time = datetime.datetime.now()
                 duration = end_time - start_time
                 self.blockstimes[self.chain[-1].id] = [start_time,end_time,duration]
         Success=self.chain[-1].id-fid 
@@ -191,8 +192,9 @@ class Blockchain:
         return selected_validator
     
     def update_navigability_csv(self):
-        file_exists = os.path.isfile('navigability_matrix.csv')
-        with open('navigability_matrix.csv', mode='a', newline='') as file:
+        filename = f'navigability_matrix_{self.start_time.strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+        file_exists = os.path.isfile(filename)
+        with open(filename, mode='a', newline='') as file:
             writer = csv.writer(file)
             if not file_exists:
                 writer.writerow(['Navigability Matrix'])
@@ -200,8 +202,9 @@ class Blockchain:
             writer.writerow([])  # Add an empty row to separate matrices
 
     def update_validators_csv(self):
-        file_exists = os.path.isfile('validators_values.csv')
-        with open('validators_values.csv', mode='a', newline='') as file:
+        filename = f'validators_values_{self.start_time.strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+        file_exists = os.path.isfile(filename)
+        with open(filename, mode='a', newline='') as file:
             writer = csv.writer(file)
             if not file_exists:
                 writer.writerow(['Validator', 'Value'])
