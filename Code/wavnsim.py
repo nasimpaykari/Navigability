@@ -102,8 +102,7 @@ class world():
 
         self.findCommon()
 
-        # Print the names of robots that moved
-        print("Robots that moved:", moved_robots)
+        return moved_robots
         
 
     def findCommon(self):

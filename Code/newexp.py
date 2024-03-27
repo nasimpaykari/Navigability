@@ -28,9 +28,9 @@ print("New Test")
 # import wavn as wv
 # Simulation!
 import wavnsim as ws
-    
-team = [i for i in range(0,10)]
-modelName='P'
+
+modelName='P'    
+team = [f"{modelName}{i+1}" for i in range(0,10)]
 numberoflandmarks = 30
 sim_world = ws.world(modelName, len(team), numberoflandmarks)
 #print("Robots : ========================")
@@ -51,33 +51,34 @@ start_datetime = datetime.datetime.fromtimestamp(start_time)
 
 data = []
 for i in range(0, 100):
+    if i == 0:
+        moving_robot = team
+    else:
+        moving_robot = moved_robots
     print(f"\nLoop number {i} has been started: \n")
     loop_start_time = time.time()
     filename_world = filename = f"{len(team)}_{i}_{start_datetime.strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
     sim_world.drawWorld(filename_world)
-    for robot in team :
-        robot_name = f"{modelName}{robot+1}"
+    for robot in moving_robot :
         num=random.randint(1,100)
-        print(F"Random number is {num} for {robot_name}")
+        print(F"Random number is {num} for {robot}")
         matches = []
         if num > 50:
-            action = f"{robot_name} looks around"
-            print(F"{robot_name} looks around")
+            action = f"{robot} looks around"
+            print(F"{robot} looks around")
             for comp_robot in team:
-                comp_robot_name = f"{modelName}{comp_robot+1}"
                 if robot != comp_robot:
-                    Matches, RMatches = sim_world.CommonLandmarkPanos(robot_name, comp_robot_name)
+                    Matches, RMatches = sim_world.CommonLandmarkPanos(robot, comp_robot)
                     if Matches:
                         #print(f"Common Landmarks Matches {robot_name} and {comp_robot_name}: {Matches}")
-                        poc.UpdateView(robot_name, comp_robot_name, Matches, RMatches)
-                        matches.append((robot_name, comp_robot_name, Matches))
+                        matches.append((robot, comp_robot, Matches))
+                    poc.UpdateView(robot, comp_robot, Matches, RMatches)
         else:
             action = None
         time.sleep(random.randint(1,2))
         # Append data for CSV
         data.append([time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(loop_start_time)), action, matches, '', '', '', ''])
-    random_bot = random.choice(team)
-    robot_searcher = f"{modelName}{random_bot+1}"
+    robot_searcher = random.choice(team)
     action = f"{robot_searcher} looks for home"
     print(F"{robot_searcher} looks for home")
     targets = sim_world.see_home_of_robot(robot_searcher)
@@ -89,13 +90,12 @@ for i in range(0, 100):
     if targets:
         shortest_paths = []
         for target in targets:
-            shortest_paths_to_target = poc.shortest_paths(modelName, robot_searcher, target)
+            shortest_path_to_target,_ = poc.shortest_path(modelName, robot_searcher, target)
             convert_shortest_paths = []
-            for path in shortest_paths_to_target:
-                robots_path = [f"{modelName}{num+1}" for num in path]
-                convert_shortest_paths.append(robots_path)
-            shortest_paths.append(convert_shortest_paths)    
-            print(f"Shortest paths through the {target}: {convert_shortest_paths}")
+            if shortest_path_to_target:
+                robots_path = [f"{modelName}{num+1}" for num in shortest_path_to_target]
+                shortest_paths.append(robots_path)    
+                print(f"Shortest paths through the {target}: {robots_path}")
     # Sort shortest_paths based on the length of its elements (sublists)
     shortest_paths = sorted(shortest_paths, key=lambda x: len(x))
     print(f"Shortest paths : {shortest_paths}")
@@ -105,7 +105,8 @@ for i in range(0, 100):
     # Append data for CSV
     data[-1][-1] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(loop_end_time))
 
-    sim_world.move()
+    moved_robots = sim_world.move()
+    print("Robots that moved:", moved_robots)
 # Write data to CSV
 filename_info = f"{len(team)}_{i}_{start_datetime.strftime('%Y-%m-%d_%H-%M-%S')}_simulation_data.csv"
 write_to_csv(data, filename_info)

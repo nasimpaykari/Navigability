@@ -164,13 +164,20 @@ class Blockchain:
         validator_keys = list(self.validators.keys())
         for ref_node, token in self.validators.items():
             ref_index = validator_keys.index(ref_node)
-            stack_weight = token / total_token
+            if total_token != 0:
+                stack_weight = token / total_token
+            else:
+                stack_weight = 0
             for par_node in self.validators.keys():
                 if ref_node != par_node:
                     par_index = validator_keys.index(par_node)
                     landmarks_weight = self.landmarks_weight(ref_node, par_node)
                     impact_factor = self.impact_factor(ref_node, par_node)
                     self.navigability[ref_index][par_index] = stack_weight * landmarks_weight * impact_factor
+                    if self.navigability[ref_index][par_index] != 0 and landmarks_weight == 0:
+                        print("***********************",stack_weight, landmarks_weight, impact_factor)
+                        print(f"++++++++++++++++++++self.navigability P{ref_index+1}P{par_index+1}: {self.navigability[ref_index][par_index]}")
+                
         # print("Navigability: ",self.navigability)
         # Update navigability CSV
         self.update_navigability_csv()
@@ -204,13 +211,16 @@ class Blockchain:
     def update_validators_csv(self):
         filename = f'validators_values_{self.start_time.strftime("%Y-%m-%d_%H-%M-%S")}.csv'
         file_exists = os.path.isfile(filename)
+        
         with open(filename, mode='a', newline='') as file:
             writer = csv.writer(file)
             if not file_exists:
-                writer.writerow(['Validator', 'Value'])
-            for validator, value in self.validators.items():
-                writer.writerow([validator, value])
-            writer.writerow([])
+                # writer.writerow(['Validator', 'Values'])  # Header for the CSV file
+                writer.writerow([validator for validator in self.validators])
+            
+            # Writing values for each validator in the same row
+            row_values = [self.validators[validator] for validator in self.validators]
+            writer.writerow(row_values)
 
     def pow_mine(self):
         # Get the previous block in the chain
@@ -435,7 +445,11 @@ class Blockchain:
                         break
         if landmarks:
             for landmark in landmarks:
-               weight += 1 / landmark[0]
+                if landmark[0] != 0:
+                    weight += 1 / landmark[0]
+                else:
+                    pass
+        # print(f"______finding common landmark in blockchain for {robot_1}{robot_2}: {landmarks} --> wieght = {weight}")
         return weight
 
     def impact_factor(self, robot_1: str, robot_2: str):
@@ -456,42 +470,30 @@ class Blockchain:
         else:
            return 0
     
-    def k_shortest_paths(self, modelName, start, target, k):
+    def shortest_paths(self, modelName, start, target):
         start = int(start[len(modelName):]) - 1
         target = int(target[len(modelName):]) - 1
-        # Initialize list to store the k shortest paths
-        k_paths = []       
-        # Perform Dijkstra's algorithm k times
-        for _ in range(k):
-            # Initialize priority queue for Dijkstra's algorithm
-            pq = [(0, start, [start])]
-            # Visited set to keep track of visited nodes
-            visited = set()          
-            while pq:
-                # Pop the node with the smallest cost
-                cost, node, path = heapq.heappop(pq)
-                
-                # If the target node is reached, append the path to k_paths
-                if node == target:
-                    k_paths.append(path)
-                    break               
-                # If the node has been visited, skip it
-                if node in visited:
-                    continue              
-                # Mark the node as visited
-                visited.add(node)               
-                # Explore neighbors
-                for neighbor, weight in enumerate(self.navigability[node]):
-                    if weight != 0 and neighbor not in visited:
-                        # Calculate the new cost
-                        new_cost = cost + weight
-                        # Push the neighbor with the new cost and path to the priority queue
-                        heapq.heappush(pq, (new_cost, neighbor, path + [neighbor]))          
-            # Remove edges from navigability matrix for the found path
-            for i in range(len(path) - 1):
-                self.navigability[path[i]][path[i+1]] = 0
-                self.navigability[path[i+1]][path[i]] = 0
-        return k_paths
+        distances = {node: float('inf') for node in range(len(self.navigability))}
+        distances[start] = 0
+        previous_nodes = {node: None for node in range(len(self.navigability))}
+        priority_queue = [(0, start)]
+        while priority_queue:
+            current_distance, current_node = heapq.heappop(priority_queue)
+            if current_node == target:
+                path = []
+                while current_node is not None:
+                    path.append(current_node)
+                    current_node = previous_nodes[current_node]
+                return path[::-1], distances[target]
+    
+            for neighbor, weight in enumerate(self.navigability[current_node]):
+                if weight > 0:  # Ignore zero weights (no connection)
+                    distance = current_distance + weight
+                    if distance < distances[neighbor]:
+                        distances[neighbor] = distance
+                        previous_nodes[neighbor] = current_node
+                        heapq.heappush(priority_queue, (distance, neighbor))
+        return [], float('inf')
 
     def details(self):
         """
