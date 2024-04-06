@@ -61,7 +61,7 @@ def node_generatorIn(blockchain,modelname,robotsnum):
         elif blockchain.consensus == "pos" :
             blockchain.update(node["name"],"start", 50)
         elif blockchain.consensus == "poc" :
-            blockchain.update(node["name"],"start", 50)
+            blockchain.update(node["name"],"start", 0)
         elif blockchain.consensus == "dpos": 
             blockchain.update(node["name"],"start", 1)   
         elif blockchain.consensus == "poa" :
@@ -77,15 +77,18 @@ def UpdateView(robot: str, comp_robot: str, Matches: list, RMatches: list):
     panoramic= []
     comp_panoramic= []
     Success={"pow":0, "pos":0, "dpos":0, "poa":0, "poc":0}       
-    if len(Matches) != 0:
+    if Matches:
        for consensus,blockchain in blockchains.items():
            Tx_1=Transaction(blockchain.latest_transaction().id+1, robot, panoramic, comp_robot, Matches, blockchain.nonce[robot])
            if Tx_1 != Blockchain.Retrieve(blockchain,robot,comp_robot) and Tx_1 not in blockchain.pending_transactions:
               blockchain.add_transaction(Tx_1)
               #Tx_1=[]
               blockchain.nonce[robot]+=1
-              if blockchain.consensus == "pos" or blockchain.consensus == "poc":
+              if blockchain.consensus == "pos":
                  blockchain.update(robot,'common_landmark', 10)
+              elif blockchain.consensus == "poc":
+                 blockchain.update(robot,'common_landmark', len(Matches))
+                 blockchain.update(comp_robot,'common_landmark', len(RMatches))
               elif blockchain.consensus == "dpos" and Node.get_node_by_name(comp_robot).privilege > 0:
                  blockchain.update(comp_robot,'common_landmark', 10)                   
            Tx_2=Transaction(blockchain.latest_transaction().id+1, comp_robot, comp_panoramic, robot, RMatches, blockchain.nonce[comp_robot])
@@ -99,8 +102,22 @@ def UpdateView(robot: str, comp_robot: str, Matches: list, RMatches: list):
                   print(f'{consensus} consensus did not generate the block, it will try again after 5 seconds')
                   time.sleep(5)
                   Success[consensus],Newblock = blockchain.generate_block()
-                                                                   
-    
+    else:
+        for consensus,blockchain in blockchains.items():
+            Matches, RMatches  = [[0,0,0, (0,0)]], [[0,0,0, (0,0)]]                                                              
+            Tx_1=Transaction(blockchain.latest_transaction().id+1, robot, panoramic, comp_robot, Matches, blockchain.nonce[robot])
+            blockchain.add_transaction(Tx_1)
+            blockchain.nonce[robot]+=1
+            Tx_2=Transaction(blockchain.latest_transaction().id+1, comp_robot, comp_panoramic, robot, RMatches, blockchain.nonce[comp_robot])
+            blockchain.add_transaction(Tx_2)
+            blockchain.nonce[comp_robot]+=1
+            Success[consensus],Newblock = blockchain.generate_block()              
+            if len(blockchain.pending_transactions) != 0 and len(blockchain.pending_transactions) >= len(blockchain.nodes):
+                while Success[consensus] != 1:
+                   print(f'{consensus} consensus did not generate the block, it will try again after 5 seconds')
+                   time.sleep(5)
+                   Success[consensus],Newblock = blockchain.generate_block()
+        
 def display(blockchain, arg: str):
     if arg == "all":       
         blockchain.details()
@@ -204,20 +221,25 @@ def RetrievePanoramicView(robot_1: str, robot_2: str):
     #print("RetrievePanoramicView:_____________Not Found")
     #display(reference_blockchain(consensuses,blockchains),"all")
     return[],[]
-                   
-def broadcast(data,sent_by,type_):
-    #for j in [i for i in Node.get_all_nodes() if i["name"] != sender]:
-    for i in Node.get_all_nodes():
-        latency=node_map_del[i["name"]][sent_by]
-        if i["name"] != sent_by:
-            receiver(data,sent_by,i["name"],type_,latency)
+
+def shortest_path(modelName, searcher, traget):
+    # k = 2
+    paths = reference_blockchain(consensuses, blockchains).shortest_paths(modelName, searcher, traget)
+    return paths
+                  
+# def broadcast(data,sent_by,type_):
+#     #for j in [i for i in Node.get_all_nodes() if i["name"] != sender]:
+#     for i in Node.get_all_nodes():
+#         latency=node_map_del[i["name"]][sent_by]
+#         if i["name"] != sent_by:
+#             receiver(data,sent_by,i["name"],type_,latency)
 
 
-def receiver(data,sent_by,receive_by,type_,latency):
-    if type_== "Transaction":
-        if data not in blockchain.pending_transactions:
-            blockchain.pending_transactions.append(data)
-    if type_== "Block":
-        if blockchain.latest_block().id != data.id:
-            blockchain.append(data)
-            transactions_pool=[]              
+# def receiver(data,sent_by,receive_by,type_,latency):
+#     if type_== "Transaction":
+#         if data not in blockchain.pending_transactions:
+#             blockchain.pending_transactions.append(data)
+#     if type_== "Block":
+#         if blockchain.latest_block().id != data.id:
+#             blockchain.append(data)
+#             transactions_pool=[]              

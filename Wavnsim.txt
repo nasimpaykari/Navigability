@@ -1,0 +1,97 @@
+## World Class
+
+This Python class represents a simulated world with robots and landmarks. It provides functionality for generating the world, moving robots, finding common landmarks between robots, and visualizing the world through plots.
+
+### Class Methods:
+
+#### \_\_init\_\_(self, modelname: str, nRobots: int = 2, nLandmarks: int = 5)
+- **Description**: Initializes the world with a specified model name, number of robots, and number of landmarks.
+- **Parameters**:
+  - `modelname` (str): A string representing the model name.
+  - `nRobots` (int): Number of robots to be created (default is 2).
+  - `nLandmarks` (int): Number of landmarks to be created (default is 5).
+
+#### makeWorld(self, modelname, nRobots, nLandmarks)
+- **Description**: Generates random positions for robots and landmarks within the world boundaries.
+- **Parameters**:
+  - `modelname` (str): A string representing the model name.
+  - `nRobots` (int): Number of robots to be created.
+  - `nLandmarks` (int): Number of landmarks to be created.
+
+#### Home(self)
+- **Description**: Assigns a random landmark as "home" to each robot.
+
+#### move(self)
+- **Description**: Moves the robots to random positions within the maximum range.
+
+#### findCommon(self)
+- **Description**: Finds common landmarks between robots.
+
+#### CommonLandmarkPanos(self, robot_1, robot_2)
+- **Description**: Finds common landmarks between two specified robots.
+- **Parameters**:
+  - `robot_1` (str): Name of the first robot.
+  - `robot_2` (str): Name of the second robot.
+- **Returns**:
+  - `Matches` (list): List of common landmarks between the specified robots.
+  - `RMatches` (list): List of reverse common landmarks between the specified robots.
+
+#### drawWorld(self, filename=None)
+- **Description**: Draws the world with robots, landmarks, and common landmarks between robots.
+- **Parameters**:
+  - `filename` (str): Name of the file to save the plot as a PDF (optional).
+
+#### doLine(self, s, e)
+- **Description**: Draws a line between two points on the map.
+- **Parameters**:
+  - `s` (tuple): Starting point of the line.
+  - `e` (tuple): Ending point of the line.
+
+#### drawRobot(self, p)
+- **Description**: Draws a robot on the map.
+- **Parameters**:
+  - `p` (list): Robot details including its name and position.
+
+#### drawLandmark(self, p)
+- **Description**: Draws a landmark on the map.
+- **Parameters**:
+  - `p` (tuple): Coordinates of the landmark.
+
+#### movements(self, filename)
+- **Description**: Plots movements of each robot on the map.
+- **Parameters**:
+  - `filename` (str): Name of the file to save the plot as a PDF.
+
+#### see_home_of_robot(self, robot_name)
+- **Description**: Finds robots that can see the home of the specified robot.
+- **Parameters**:
+  - `robot_name` (str): Name of the robot.
+- **Returns**:
+  - `robots_seeing_home` (list): List of robots that can see the home of the specified robot.
+
+### Example Usage:
+
+```python
+# Create a world instance
+w = world(modelname="P", nRobots=5, nLandmarks=20)
+
+# Draw the initial world
+w.drawWorld(filename="initial_world.pdf")
+
+# Get common landmarks between two robots
+matches, reverse_matches = w.CommonLandmarkPanos("P1", "P2")
+
+# Move the robots
+w.move()
+
+# Draw the world after movement
+w.drawWorld(filename="world_after_movement.pdf")
+
+# Show movements of each robot
+w.movements(filename="robot_movements.pdf")
+
+# See which robots can see the home of robot "P1"
+robots_seeing_home_of_P1 = w.see_home_of_robot("P1")
+```
+
+The above example demonstrates how to create a world, interact with robots, and visualize their movements and relationships with landmarks.
