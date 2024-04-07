@@ -283,6 +283,7 @@ class Blockchain:
         if new_block.previous_hash == last_valid_block.hash:
             # Add the new block to the chain
             self.chain.append(new_block)
+            self.update(selected_miner,'reward', 20) 
             # Clear the list of pending transactions
             self.pending_transactions = []
             return new_block
@@ -376,11 +377,12 @@ class Blockchain:
         if new_block.previous_hash == last_valid_block.hash:
             # Add the new block to the chain
             self.chain.append(new_block)
+            self.update(selected_miner,'reward', 1) 
             # Clear the list of pending transactions
             self.pending_transactions = []
             return new_block
         else:
-            self.update(selected_miner,'punishment', 40) 
+            self.update(selected_miner,'punishment', 4) 
             print (f"Something goes wrong with the {selected_miner[0]}, it generated invalid block")               
             self.poc_mine()
             return []        
@@ -430,6 +432,7 @@ class Blockchain:
   
     def landmarks_weight(self, robot_1: str, robot_2: str):
         found_transaction = 0
+        max_duration = 10
         landmarks = []
         weight = 0
         for transaction in self.pending_transactions[::-1]:
@@ -440,7 +443,6 @@ class Blockchain:
                 current_time = time.ctime()
                 current_timestamp = time.mktime(time.strptime(current_time))
                 time_difference = current_timestamp - transaction_timestamp
-                max_duration = 5
                 if time_difference < max_duration: 
                     landmarks = transaction.com_landmarks
                     break
@@ -454,7 +456,6 @@ class Blockchain:
                         current_time = time.ctime()
                         current_timestamp = time.mktime(time.strptime(current_time))
                         time_difference = current_timestamp - transaction_timestamp
-                        max_duration = 5
                         if time_difference < max_duration: 
                             landmarks = transaction.com_landmarks
                             break
