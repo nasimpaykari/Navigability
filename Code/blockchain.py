@@ -429,20 +429,37 @@ class Blockchain:
                     return transaction    
   
     def landmarks_weight(self, robot_1: str, robot_2: str):
-        find_transaction = 0
+        found_transaction = 0
         landmarks = []
         weight = 0
         for transaction in self.pending_transactions[::-1]:
             if transaction.sender == robot_1 and transaction.partner == robot_2:
-                find_transaction = 1
-                landmarks = transaction.com_landmarks
-                break
-        if find_transaction == 0 :
+                found_transaction = 1
+                transaction_time = transaction.timestamp
+                transaction_timestamp = time.mktime(time.strptime(transaction_time))
+                current_time = time.ctime()
+                current_timestamp = time.mktime(time.strptime(current_time))
+                time_difference = current_timestamp - transaction_timestamp
+                max_duration = 5
+                if time_difference < max_duration: 
+                    landmarks = transaction.com_landmarks
+                    break
+        if found_transaction == 0 :
             for block in self.chain[::-1]:
                 for transaction in block.transactions[::-1]:
                     if transaction.sender==robot_1 and transaction.partner==robot_2 :
-                        landmarks = transaction.com_landmarks
-                        break
+                        found_transaction = True
+                        transaction_time = transaction.timestamp
+                        transaction_timestamp = time.mktime(time.strptime(transaction_time))
+                        current_time = time.ctime()
+                        current_timestamp = time.mktime(time.strptime(current_time))
+                        time_difference = current_timestamp - transaction_timestamp
+                        max_duration = 5
+                        if time_difference < max_duration: 
+                            landmarks = transaction.com_landmarks
+                            break
+                if found_transaction:
+                    break                   
         if landmarks:
             for landmark in landmarks:
                 if landmark[0] != 0:

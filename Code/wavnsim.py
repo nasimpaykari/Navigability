@@ -1,6 +1,7 @@
 import numpy as np
 import random
 import matplotlib.pyplot as plt
+import time
 
 class world():
     def __init__(self, modelname: str, nRobots: 2, nLandmarks: 5):     
@@ -101,6 +102,8 @@ class world():
                 moved_robots.append(r[0])  # Record the name of the robot that moved
 
         self.findCommon()
+        wait_time = random.uniform(2, 4)
+        time.sleep(wait_time)
 
         return moved_robots
         
@@ -119,7 +122,7 @@ class world():
                     d1 = np.hypot(r1[1][0]-l[0], r1[1][1]-l[1])
                     d2 = np.hypot(r2[1][0]-l[0], r2[1][1]-l[1])
                     if d1<self.rlRange and d2<self.rlRange:
-                        q = random.randrange(5,200)
+                        q = int(d1+d2)
                         cl.append([l,q])
                 if len(cl)>0:
                     self.common.append((r1,r2,cl))             
