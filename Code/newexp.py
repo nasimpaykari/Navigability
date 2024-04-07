@@ -50,7 +50,7 @@ start_time = time.time()
 start_datetime = datetime.datetime.fromtimestamp(start_time)
 
 data = []
-for i in range(0, 100):
+for i in range(0, 10):
     if i == 0:
         moving_robot = team
     else:
