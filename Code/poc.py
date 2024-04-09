@@ -102,6 +102,21 @@ def UpdateView(robot: str, comp_robot: str, Matches: list, RMatches: list):
                   print(f'{consensus} consensus did not generate the block, it will try again after 5 seconds')
                   time.sleep(5)
                   Success[consensus],Newblock = blockchain.generate_block()
+    # else:
+    #     for consensus,blockchain in blockchains.items():
+    #         Matches, RMatches  = [[0,0,0, (0,0)]], [[0,0,0, (0,0)]]                                                              
+    #         Tx_1=Transaction(blockchain.latest_transaction().id+1, robot, panoramic, comp_robot, Matches, blockchain.nonce[robot])
+    #         blockchain.add_transaction(Tx_1)
+    #         blockchain.nonce[robot]+=1
+    #         Tx_2=Transaction(blockchain.latest_transaction().id+1, comp_robot, comp_panoramic, robot, RMatches, blockchain.nonce[comp_robot])
+    #         blockchain.add_transaction(Tx_2)
+    #         blockchain.nonce[comp_robot]+=1
+    #         Success[consensus],Newblock = blockchain.generate_block()              
+    #         if len(blockchain.pending_transactions) != 0 and len(blockchain.pending_transactions) >= len(blockchain.nodes):
+    #             while Success[consensus] != 1:
+    #                print(f'{consensus} consensus did not generate the block, it will try again after 5 seconds')
+    #                time.sleep(5)
+    #                Success[consensus],Newblock = blockchain.generate_block()
         
 def display(blockchain, arg: str):
     if arg == "all":       

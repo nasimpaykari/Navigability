@@ -50,22 +50,19 @@ start_time = time.time()
 start_datetime = datetime.datetime.fromtimestamp(start_time)
 
 data = []
-for i in range(0, 10):
-    if i == 0:
-        moving_robot = team
-    else:
-        moving_robot = moved_robots
+for i in range(0, 100):
     print(f"\nLoop number {i} has been started: \n")
     loop_start_time = time.time()
     filename_world = filename = f"{len(team)}_{i}_{start_datetime.strftime('%Y-%m-%d_%H-%M-%S')}.pdf"
     sim_world.drawWorld(filename_world)
-    for robot in moving_robot :
+    for robot in team :
         num=random.randint(1,100)
         print(F"Random number is {num} for {robot}")
         matches = []
         if num > 50:
-            action = f"{robot} looks around"
-            print(F"{robot} looks around")
+            print(F"{robot} moves and looks around")
+            sim_world.move(robot)
+            action = f"{robot} moved and looks around"
             for comp_robot in team:
                 if robot != comp_robot:
                     Matches, RMatches = sim_world.CommonLandmarkPanos(robot, comp_robot)
@@ -74,7 +71,7 @@ for i in range(0, 10):
                         matches.append((robot, comp_robot, Matches))
                     poc.UpdateView(robot, comp_robot, Matches, RMatches)
         else:
-            action = None
+            action = f"{robot} did not move!"
         time.sleep(random.randint(1,2))
         # Append data for CSV
         data.append([time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(loop_start_time)), action, matches, '', '', '', ''])
@@ -105,8 +102,6 @@ for i in range(0, 10):
     # Append data for CSV
     data[-1][-1] = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(loop_end_time))
 
-    moved_robots = sim_world.move()
-    print("Robots that moved:", moved_robots)
 # Write data to CSV
 filename_info = f"{len(team)}_{i}_{start_datetime.strftime('%Y-%m-%d_%H-%M-%S')}_simulation_data.csv"
 write_to_csv(data, filename_info)
@@ -117,6 +112,6 @@ poc.metric("transactions",filename_info,len(team))
 poc.metric("blocks",filename_info,len(team))
 
 
-input("Press Enter to exit...")
+# input("Press Enter to exit...")
 
     

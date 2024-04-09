@@ -73,39 +73,82 @@ class world():
             home_landmark = random.choice(self.landmarks)
             self.homelandmark[r[0]] = home_landmark
 
-    def move(self):
+    # def move(self):
+    #     """
+    #     Move the robots to random positions within the maximum range.
+    #     """
+    #     xrange = [0, self.worldX]
+    #     yrange = [0, self.worldY]
+    #     moved_robots = []  # List to store names of robots that moved
+
+    #     # Calculate maximum movement range (1/50th of the world size)
+    #     max_range_x = self.worldX / 4
+    #     max_range_y = self.worldY / 4
+
+    #     # Move robots to random positions within the maximum range
+    #     for r in self.robots:
+    #         should_move = random.choice([True, True, False])  # Randomly decide whether to move the robot
+    #         if should_move:
+    #             move_x = random.uniform(-max_range_x, max_range_x)
+    #             move_y = random.uniform(-max_range_y, max_range_y)
+
+    #             # Update robot position
+    #             new_x = max(min(r[1][0] + move_x, xrange[1] - 5), xrange[0] + 5)
+    #             new_y = max(min(r[1][1] + move_y, yrange[1] - 5), yrange[0] + 5)
+    #             r[1][0] = new_x
+    #             r[1][1] = new_y
+
+    #             self.positions[r[0]].append((new_x, new_y))
+    #             moved_robots.append(r[0])  # Record the name of the robot that moved
+
+    #     self.findCommon()
+    #     wait_time = random.uniform(2, 4)
+    #     time.sleep(wait_time)
+
+    #     return moved_robots
+
+    def move(self, robot_name):
         """
-        Move the robots to random positions within the maximum range.
+        Move the specified robot to a random position within the maximum range.
+        
+        Parameters:
+        - robot_name: Name of the robot to move.
         """
         xrange = [0, self.worldX]
         yrange = [0, self.worldY]
-        moved_robots = []  # List to store names of robots that moved
 
-        # Calculate maximum movement range (1/50th of the world size)
+        # Calculate maximum movement range (1/4th of the world size)
         max_range_x = self.worldX / 4
         max_range_y = self.worldY / 4
 
-        # Move robots to random positions within the maximum range
+        # Find the specified robot
+        target_robot = None
         for r in self.robots:
-            should_move = random.choice([True, True, False])  # Randomly decide whether to move the robot
-            if should_move:
-                move_x = random.uniform(-max_range_x, max_range_x)
-                move_y = random.uniform(-max_range_y, max_range_y)
+            if r[0] == robot_name:
+                target_robot = r
+                break
 
-                # Update robot position
-                new_x = max(min(r[1][0] + move_x, xrange[1] - 5), xrange[0] + 5)
-                new_y = max(min(r[1][1] + move_y, yrange[1] - 5), yrange[0] + 5)
-                r[1][0] = new_x
-                r[1][1] = new_y
+        if target_robot is None:
+            print(f"Robot with name '{robot_name}' not found.")
+            return []
 
-                self.positions[r[0]].append((new_x, new_y))
-                moved_robots.append(r[0])  # Record the name of the robot that moved
+        # Move the specified robot to a random position within the maximum range
+        move_x = random.uniform(-max_range_x, max_range_x)
+        move_y = random.uniform(-max_range_y, max_range_y)
 
+        # Update robot position
+        new_x = max(min(target_robot[1][0] + move_x, xrange[1] - 5), xrange[0] + 5)
+        new_y = max(min(target_robot[1][1] + move_y, yrange[1] - 5), yrange[0] + 5)
+        target_robot[1][0] = new_x
+        target_robot[1][1] = new_y
+
+        self.positions[target_robot[0]].append((new_x, new_y))
         self.findCommon()
+        
+        # Sleep for a random amount of time
         wait_time = random.uniform(2, 4)
         time.sleep(wait_time)
-
-        return moved_robots
+        return
         
 
     def findCommon(self):
@@ -181,9 +224,10 @@ class world():
         # Save figure to PDF if filename is provided
         if filename:
             plt.savefig(filename, format='pdf', bbox_inches='tight')
-                    
-        # plt.show()
-        # plt.pause(0.1)
+            plt.close()  # Close the plot to prevent it from being displayed
+        else:
+            plt.show()
+            plt.pause(0.1)
         return
 
     def doLine(self, s,e):
@@ -210,8 +254,8 @@ class world():
         Parameters:
             p (list): Robot details including its name and position.
         """
-        plt.plot(p[1][0], p[1][1], marker='s', markersize=10, markerfacecolor='white', markeredgecolor='blue', markeredgewidth=1)
-        plt.text(p[1][0], p[1][1], p[0], fontsize=8, color='black', ha='center', va='center')     
+        plt.plot(p[1][0], p[1][1], marker='s', markersize=15, markerfacecolor='white', markeredgecolor='blue', markeredgewidth=1)
+        plt.text(p[1][0], p[1][1], p[0], fontsize=9, color='black', ha='center', va='center')     
         #for x in [p[0]-1,p[0],p[0]+1]:
             #self.map[x][p[1]]=self.robotMark
         #for y in [p[1]-1,p[1],p[1]+1]:
@@ -292,11 +336,17 @@ class world():
 
 # print("Robots are moved!")
 # # Move the robots
-# w.move()
+# w.move("P1")
 
 # # Draw the world after movement
 # w.drawWorld(filename="world_after_movement.pdf")
 
+# w.move("P1")
+# w.drawWorld(filename="world_after_movement.pdf")
+# w.move("P2")
+# w.drawWorld(filename="world_after_movement.pdf")
+# w.move("P3")
+# w.drawWorld(filename="world_after_movement.pdf")
 # # Get common landmarks between two robots
 # matches, reverse_matches = w.CommonLandmarkPanos("P1", "P2")
 # print("Matches between 'P1' and 'P2':")
