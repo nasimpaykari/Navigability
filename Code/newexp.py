@@ -43,7 +43,7 @@ sim_world = ws.world(modelName, len(team), numberoflandmarks)
 #print("RMatches: ")
 #print(RMatches)
 
-poc.initialize_blockchain()
+poc.initialize_blockchain(modelName)
 poc.node_generator(modelName, len(team))
 
 start_time = time.time()
@@ -87,7 +87,7 @@ for i in range(0, 100):
     if targets:
         shortest_paths = []
         for target in targets:
-            shortest_path_to_target,_ = poc.shortest_path(modelName, robot_searcher, target)
+            shortest_path_to_target,_ = poc.shortest_path(robot_searcher, target)
             convert_shortest_paths = []
             if shortest_path_to_target:
                 robots_path = [f"{modelName}{num+1}" for num in shortest_path_to_target]

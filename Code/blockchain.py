@@ -14,7 +14,7 @@ class Blockchain:
     """
     Represents a blockchain.
     """
-    def __init__(self,consensus):
+    def __init__(self, consensus, modelName):
         """
         Initializes a new instance of the Blockchain class.
         Argument:
@@ -36,7 +36,7 @@ class Blockchain:
         self.create_genesis_block()
         self.blockstimes={}
         self.navigability=[]
-        self.wvalidators = {}
+        self.modelName = modelName
         
 
     def update(self, robot, task_type, amount):
@@ -126,7 +126,7 @@ class Blockchain:
                 self.blockstimes[self.chain[-1].id] = [start_time,end_time,duration]
         Success=self.chain[-1].id-fid 
         if Success != 1 :
-            print(F"The Block is not generated yet")
+            # print(F"The Block is not generated yet")
             # print(F"Number of pending transactions ({self.consensus}): {len(self.pending_transactions)}")
             return Success,[]
         return Success,Gen_Block
@@ -149,29 +149,43 @@ class Blockchain:
         # Return the address of the selected validator
         return miner
     
+    def validation(self, navigation_matrix):
+        n = len(navigation_matrix)
+        result = []
+        update_gen = {}
+        for i in range(n):
+            row_sum = 0
+            for j in range(n):
+                row_sum += navigation_matrix[i][j]
+                name = f"{self.modelName}{i + 1}"
+            update_gen[name] = row_sum
+            result.append((name, row_sum))
+        result.sort(key=lambda x: x[1], reverse=True)
+        top_3_indices = [x[0] for x in result[:3]]
+        selected_index = random.choice(top_3_indices)
+        self.update_gen_csv(update_gen)
+        return selected_index
+    
     def select_miner_poc(self):
         """
-        Create a navigability matrix and Select the best miner based on it.
+        Using the navigability matrix of the last block and Select the best miner based on it.
 
         Returns:
         str: The selected validator.
         """
+        if self.chain[-1].id > 1:
+            navigation_matrix = self.chain[-1].navigability
+        else:
+            navigation_matrix = []
         num_nodes = len(self.nodes)
         # List of validators with their stakes.
         self.validators = {node['name']: node['privilege'] for node in self.nodes}
         self.update_validators_csv()
-        total_token = sum(self.validators.values())
-        for ref_node, token in self.validators.items():
-            trx_weight = self.transactions_weight(ref_node)
-            if total_token != 0:
-                stack_weight = token / total_token
-            else:
-                stack_weight = 0                  
-            self.wvalidators[ref_node] = trx_weight*stack_weight
-        self.update_wvalidators_csv()
-        top_3_validators = sorted(self.wvalidators.items(), key=lambda x: x[1], reverse=True)[:3]
-        selected_validator = random.choice(top_3_validators)[0]  # Randomly choose one from the top 3
-                 
+        if navigation_matrix:
+            selected_validator = self.validation(navigation_matrix)    
+        else:
+            validator_names = list(self.validators.keys())
+            selected_validator = random.choice(validator_names)     
         return selected_validator
     
     def update_navigability_csv(self):
@@ -197,21 +211,21 @@ class Blockchain:
             # Writing values for each validator in the same row
             row_values = [self.validators[validator] for validator in self.validators]
             writer.writerow(row_values)
-    
-    def update_wvalidators_csv(self):
-        filename = f'wvalidators_values_{self.start_time.strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+            
+    def update_gen_csv(self, update_gen):
+        filename = f'update_gen_values_{self.start_time.strftime("%Y-%m-%d_%H-%M-%S")}.csv'
         file_exists = os.path.isfile(filename)
         
         with open(filename, mode='a', newline='') as file:
             writer = csv.writer(file)
             if not file_exists:
                 # writer.writerow(['Validator', 'Values'])  # Header for the CSV file
-                writer.writerow([validator for validator in self.wvalidators])
+                writer.writerow([validator for validator in update_gen])
             
             # Writing values for each validator in the same row
-            row_values = [self.wvalidators[validator] for validator in self.wvalidators]
+            row_values = [update_gen[validator] for validator in update_gen]
             writer.writerow(row_values)
-
+            
     def pow_mine(self):
         # Get the previous block in the chain
         previous_block = self.latest_block()                
@@ -472,9 +486,9 @@ class Blockchain:
                 weight += 1 / landmark[0]
         return weight
             
-    def update_navigabilty(self, modelName, robot, partner, Matches, RMatches):
-        robot_index = int(robot[len(modelName):]) - 1
-        partner_index = int(partner[len(modelName):]) - 1
+    def update_navigabilty(self, robot, partner, Matches, RMatches):
+        robot_index = int(robot[len(self.modelName):]) - 1
+        partner_index = int(partner[len(self.modelName):]) - 1
         impact_factor = self.impact_factor(robot, partner)
         robot_stack_weight = self.stack_weight(robot)
         partner_stack_weight = self.stack_weight(partner)
@@ -486,9 +500,9 @@ class Blockchain:
         self.update_navigability_csv()
         return
 
-    def shortest_paths(self, modelName, start, target):
-        start = int(start[len(modelName):]) - 1
-        target = int(target[len(modelName):]) - 1
+    def shortest_paths(self, start, target):
+        start = int(start[len(self.modelName):]) - 1
+        target = int(target[len(self.modelName):]) - 1
         distances = {node: float('inf') for node in range(len(self.navigability))}
         distances[start] = 0
         previous_nodes = {node: None for node in range(len(self.navigability))}

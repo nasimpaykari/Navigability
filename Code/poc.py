@@ -21,14 +21,14 @@ import wavnsim as ws
 consensuses={"poc":True, "pos":False, "pow":False , "dpos":False, "poa":False}
 
     
-def initialize_blockchain():
+def initialize_blockchain(modelName):
     global blockchains
     global authorities_list
     
     blockchains={}
     for consensus,enabled in consensuses.items():
         if enabled :
-            blockchains[consensus] = Blockchain(consensus)
+            blockchains[consensus] = Blockchain(consensus, modelName)
             if consensus == "poa" :
                 authorities_list = ["P1"]
             print (f"Blockchain based on {consensus} consensus is started.")
@@ -103,7 +103,7 @@ def UpdateView(modelName: str, robot: str, comp_robot: str, Matches: list, RMatc
                   time.sleep(5)
                   Success[consensus],Newblock = blockchain.generate_block()
            # Update navigation
-        blockchain.update_navigabilty(modelName, robot, comp_robot, Matches, RMatches)  
+        blockchain.update_navigabilty(robot, comp_robot, Matches, RMatches)  
 
         
 def display(blockchain, arg: str):
@@ -210,9 +210,9 @@ def RetrievePanoramicView(robot_1: str, robot_2: str):
     #display(reference_blockchain(consensuses,blockchains),"all")
     return[],[]
 
-def shortest_path(modelName, searcher, traget):
+def shortest_path(searcher, traget):
     # k = 2
-    paths = reference_blockchain(consensuses, blockchains).shortest_paths(modelName, searcher, traget)
+    paths = reference_blockchain(consensuses, blockchains).shortest_paths(searcher, traget)
     return paths
                   
 # def broadcast(data,sent_by,type_):
