@@ -127,7 +127,7 @@ class Blockchain:
         Success=self.chain[-1].id-fid 
         if Success != 1 :
             print(F"The Block is not generated yet")
-            print(F"Number of pending transactions ({self.consensus}): {len(self.pending_transactions)}")
+            # print(F"Number of pending transactions ({self.consensus}): {len(self.pending_transactions)}")
             return Success,[]
         return Success,Gen_Block
         
