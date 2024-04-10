@@ -36,6 +36,8 @@ class Blockchain:
         self.create_genesis_block()
         self.blockstimes={}
         self.navigability=[]
+        self.wvalidators = {}
+        
 
     def update(self, robot, task_type, amount):
         """
@@ -155,45 +157,19 @@ class Blockchain:
         str: The selected validator.
         """
         num_nodes = len(self.nodes)
-        self.navigability = [[0] * num_nodes for _ in range(num_nodes)]
         # List of validators with their stakes.
         self.validators = {node['name']: node['privilege'] for node in self.nodes}
-        # print("Nodes: ",self.validators)
+        self.update_validators_csv()
         total_token = sum(self.validators.values())
-        # self.weights = {node: token / total_token  for node, token in self.validators.items()}
-        validator_keys = list(self.validators.keys())
         for ref_node, token in self.validators.items():
-            ref_index = validator_keys.index(ref_node)
+            trx_weight = self.transactions_weight(ref_node)
             if total_token != 0:
                 stack_weight = token / total_token
             else:
-                stack_weight = 0
-            for par_node in self.validators.keys():
-                if ref_node != par_node:
-                    par_index = validator_keys.index(par_node)
-                    landmarks_weight = self.landmarks_weight(ref_node, par_node)
-                    impact_factor = self.impact_factor(ref_node, par_node)
-                    self.navigability[ref_index][par_index] = stack_weight * landmarks_weight * impact_factor
-                    if self.navigability[ref_index][par_index] != 0 and landmarks_weight == 0:
-                        print("***********************",stack_weight, landmarks_weight, impact_factor)
-                        print(f"++++++++++++++++++++self.navigability P{ref_index+1}P{par_index+1}: {self.navigability[ref_index][par_index]}")
-                
-        # print("Navigability: ",self.navigability)
-        # Update navigability CSV
-        self.update_navigability_csv()
-        # Update validators CSV
-        self.update_validators_csv()
-        # max_nav = float('-inf')
-        # max_indices = (0,0)
-        # for i in range(num_nodes):
-        #    for j in range(num_nodes):
-        #       if self.navigability[i][j] > max_nav:
-        #         max_nav = self.navigability[i][j]
-        #         max_indices = (i,j)
-        # selected_validator = random.choice([validator_keys[max_indices[0]], validator_keys[max_indices[1]]])
-        # Select top 3 validators based on privilege
-        
-        top_3_validators = sorted(self.validators.items(), key=lambda x: x[1], reverse=True)[:3]
+                stack_weight = 0                  
+            self.wvalidators[ref_node] = trx_weight*stack_weight
+        self.update_wvalidators_csv()
+        top_3_validators = sorted(self.wvalidators.items(), key=lambda x: x[1], reverse=True)[:3]
         selected_validator = random.choice(top_3_validators)[0]  # Randomly choose one from the top 3
                  
         return selected_validator
@@ -220,6 +196,20 @@ class Blockchain:
             
             # Writing values for each validator in the same row
             row_values = [self.validators[validator] for validator in self.validators]
+            writer.writerow(row_values)
+    
+    def update_wvalidators_csv(self):
+        filename = f'wvalidators_values_{self.start_time.strftime("%Y-%m-%d_%H-%M-%S")}.csv'
+        file_exists = os.path.isfile(filename)
+        
+        with open(filename, mode='a', newline='') as file:
+            writer = csv.writer(file)
+            if not file_exists:
+                # writer.writerow(['Validator', 'Values'])  # Header for the CSV file
+                writer.writerow([validator for validator in self.wvalidators])
+            
+            # Writing values for each validator in the same row
+            row_values = [self.wvalidators[validator] for validator in self.wvalidators]
             writer.writerow(row_values)
 
     def pow_mine(self):
@@ -422,72 +412,80 @@ class Blockchain:
             if current_block.previous_hash != previous_block.hash:
                 return False
         return True
-
-    
+ 
     def Retrieve(self,robot: str, com_robot: str):
         for block in self.chain[::-1]:
             for transaction in block.transactions[::-1]:
                 if transaction.sender == robot and transaction.partner == com_robot:
                     return transaction    
-  
-    def landmarks_weight(self, robot_1: str, robot_2: str):
-        found_transaction = 0
-        max_duration = 10
-        landmarks = []
-        weight = 0
+    
+    def transactions_weight(self, robot_1: str):
+        w = 0
+        if self.pending_transactions:
+            total = self.pending_transactions[-1].id
+        else:
+            total = self.chain[-1].transactions[-1].id
         for transaction in self.pending_transactions[::-1]:
-            if transaction.sender == robot_1 and transaction.partner == robot_2:
-                found_transaction = 1
-                transaction_time = transaction.timestamp
-                transaction_timestamp = time.mktime(time.strptime(transaction_time))
-                current_time = time.ctime()
-                current_timestamp = time.mktime(time.strptime(current_time))
-                time_difference = current_timestamp - transaction_timestamp
-                if time_difference < max_duration: 
-                    landmarks = transaction.com_landmarks
-                    break
-        if found_transaction == 0 :
+            if transaction.sender == robot_1:
+                r_total = transaction.nonce
+                w = r_total / total
+                break
+        if w == 0:
             for block in self.chain[::-1]:
                 for transaction in block.transactions[::-1]:
-                    if transaction.sender==robot_1 and transaction.partner==robot_2 :
-                        found_transaction = True
-                        transaction_time = transaction.timestamp
-                        transaction_timestamp = time.mktime(time.strptime(transaction_time))
-                        current_time = time.ctime()
-                        current_timestamp = time.mktime(time.strptime(current_time))
-                        time_difference = current_timestamp - transaction_timestamp
-                        if time_difference < max_duration: 
-                            landmarks = transaction.com_landmarks
-                            break
-                if found_transaction:
-                    break                   
-        if landmarks:
-            for landmark in landmarks:
-                if landmark[0] != 0:
-                    weight += 1 / landmark[0]
-                else:
-                    pass
-        # print(f"______finding common landmark in blockchain for {robot_1}{robot_2}: {landmarks} --> wieght = {weight}")
-        return weight
-
+                    if transaction.sender==robot_1:
+                        r_total = transaction.nonce
+                        w = r_total / total
+                        break
+                break
+        return w
+       
     def impact_factor(self, robot_1: str, robot_2: str):
-        im_factor = 0
+        im_factor = 1
         for transaction in self.pending_transactions[::-1]:
             if transaction.sender == robot_1 and transaction.partner == robot_2:
                 im_factor += 1
-                if im_factor > 9 :
+                if im_factor >= 10 :
                    break
         for block in self.chain[::-1]:
             for transaction in block.transactions[::-1]:
-                if transaction.sender==robot_1 and transaction.partner==robot_2 :
+                if transaction.sender==robot_1 and transaction.partner==robot_2 and im_factor < 10:
                     im_factor += 1
-                    if im_factor > 9 :
+                    if im_factor >= 10 :
                        break
-        if im_factor > 0 :
-           return im_factor
+        return im_factor/10
+
+       
+    def stack_weight(self, robot):
+        validators = {node['name']: node['privilege'] for node in self.nodes}
+        total_token = sum(validators.values())
+        token = validators[robot]
+        if total_token != 0:
+            return token / total_token
         else:
-           return 0
+            return 0
     
+    def landmarks_weight(self, Matches):
+        weight = 0
+        if Matches:
+            for landmark in Matches:
+                weight += 1 / landmark[0]
+        return weight
+            
+    def update_navigabilty(self, modelName, robot, partner, Matches, RMatches):
+        robot_index = int(robot[len(modelName):]) - 1
+        partner_index = int(partner[len(modelName):]) - 1
+        impact_factor = self.impact_factor(robot, partner)
+        robot_stack_weight = self.stack_weight(robot)
+        partner_stack_weight = self.stack_weight(partner)
+        robot_landmarks_weight = self.landmarks_weight(Matches)
+        partner_landmarks_weight = self.landmarks_weight(RMatches)
+        self.navigability[robot_index][partner_index] = robot_stack_weight * robot_landmarks_weight * impact_factor
+        self.navigability[partner_index][robot_index] = partner_stack_weight * partner_landmarks_weight * impact_factor
+        # Update navigability CSV
+        self.update_navigability_csv()
+        return
+
     def shortest_paths(self, modelName, start, target):
         start = int(start[len(modelName):]) - 1
         target = int(target[len(modelName):]) - 1

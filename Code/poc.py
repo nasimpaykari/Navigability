@@ -70,15 +70,15 @@ def node_generatorIn(blockchain,modelname,robotsnum):
     print(blockchain.nodes) 
 
        
-def UpdateView(robot: str, comp_robot: str, Matches: list, RMatches: list):
+def UpdateView(modelName: str, robot: str, comp_robot: str, Matches: list, RMatches: list):
     """
     Simulation!
     """ 
     panoramic= []
     comp_panoramic= []
     Success={"pow":0, "pos":0, "dpos":0, "poa":0, "poc":0}       
-    if Matches:
-       for consensus,blockchain in blockchains.items():
+    for consensus,blockchain in blockchains.items():
+        if Matches:
            Tx_1=Transaction(blockchain.latest_transaction().id+1, robot, panoramic, comp_robot, Matches, blockchain.nonce[robot])
            if Tx_1 != Blockchain.Retrieve(blockchain,robot,comp_robot) and Tx_1 not in blockchain.pending_transactions:
               blockchain.add_transaction(Tx_1)
@@ -97,26 +97,14 @@ def UpdateView(robot: str, comp_robot: str, Matches: list, RMatches: list):
               blockchain.nonce[comp_robot]+=1
               Tx_2=[]
            Success[consensus],Newblock = blockchain.generate_block()              
-           if len(blockchain.pending_transactions) != 0 and len(blockchain.pending_transactions) >= len(blockchain.nodes):
+           if len(blockchain.pending_transactions) != 0 and len(blockchain.pending_transactions) >= 2*len(blockchain.nodes):
               while Success[consensus] != 1:
                   print(f'{consensus} consensus did not generate the block, it will try again after 5 seconds')
                   time.sleep(5)
                   Success[consensus],Newblock = blockchain.generate_block()
-    # else:
-    #     for consensus,blockchain in blockchains.items():
-    #         Matches, RMatches  = [[0,0,0, (0,0)]], [[0,0,0, (0,0)]]                                                              
-    #         Tx_1=Transaction(blockchain.latest_transaction().id+1, robot, panoramic, comp_robot, Matches, blockchain.nonce[robot])
-    #         blockchain.add_transaction(Tx_1)
-    #         blockchain.nonce[robot]+=1
-    #         Tx_2=Transaction(blockchain.latest_transaction().id+1, comp_robot, comp_panoramic, robot, RMatches, blockchain.nonce[comp_robot])
-    #         blockchain.add_transaction(Tx_2)
-    #         blockchain.nonce[comp_robot]+=1
-    #         Success[consensus],Newblock = blockchain.generate_block()              
-    #         if len(blockchain.pending_transactions) != 0 and len(blockchain.pending_transactions) >= len(blockchain.nodes):
-    #             while Success[consensus] != 1:
-    #                print(f'{consensus} consensus did not generate the block, it will try again after 5 seconds')
-    #                time.sleep(5)
-    #                Success[consensus],Newblock = blockchain.generate_block()
+           # Update navigation
+        blockchain.update_navigabilty(modelName, robot, comp_robot, Matches, RMatches)  
+
         
 def display(blockchain, arg: str):
     if arg == "all":       

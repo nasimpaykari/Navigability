@@ -57,19 +57,19 @@ for i in range(0, 100):
     sim_world.drawWorld(filename_world)
     for robot in team :
         num=random.randint(1,100)
-        print(F"Random number is {num} for {robot}")
+        # print(F"Random number is {num} for {robot}")
         matches = []
         if num > 50:
             print(F"{robot} moves and looks around")
             sim_world.move(robot)
-            action = f"{robot} moved and looks around"
             for comp_robot in team:
                 if robot != comp_robot:
                     Matches, RMatches = sim_world.CommonLandmarkPanos(robot, comp_robot)
                     if Matches:
                         #print(f"Common Landmarks Matches {robot_name} and {comp_robot_name}: {Matches}")
                         matches.append((robot, comp_robot, Matches))
-                    poc.UpdateView(robot, comp_robot, Matches, RMatches)
+                    poc.UpdateView(modelName, robot, comp_robot, Matches, RMatches)
+            action = f"{robot} moved and looked around"
         else:
             action = f"{robot} did not move!"
         time.sleep(random.randint(1,2))
