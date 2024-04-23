@@ -187,17 +187,28 @@ class Blockchain:
             validator_names = list(self.validators.keys())
             selected_validator = random.choice(validator_names)     
         return selected_validator
-    
+
     def update_navigability_csv(self):
         filename = f'navigability_matrix_{self.start_time.strftime("%Y-%m-%d_%H-%M-%S")}.csv'
         file_exists = os.path.isfile(filename)
+        
         with open(filename, mode='a', newline='') as file:
             writer = csv.writer(file)
+            
+            names = [item['name'] for item in self.nodes]
+            # Write headers if the file is newly created
             if not file_exists:
-                writer.writerow(['Navigability Matrix'])
-            writer.writerows(self.navigability)
-            writer.writerow([])  # Add an empty row to separate matrices
-
+                headers = [''] + names # Column headers from dictionary keys
+                writer.writerow(headers)
+            
+            # Write rows with row header and values
+            for i, row in enumerate(self.navigability):
+                row_header = [names[i]]  # Row header from dictionary keys
+                writer.writerow(row_header + row)
+            
+            # Add an empty row for better readability
+            # writer.writerow([])
+            
     def update_validators_csv(self):
         filename = f'validators_values_{self.start_time.strftime("%Y-%m-%d_%H-%M-%S")}.csv'
         file_exists = os.path.isfile(filename)
