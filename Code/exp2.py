@@ -33,7 +33,7 @@ poc.node_generator(modelName, len(team))
 start_time = time.ctime()
 filename = f"{len(team)}_exp_{start_time}"
 filename_world = f"Log_{len(team)}_exp_{start_time}.csv"
-sim_world.drawWorld("Started_world.pdf")
+sim_world.drawWorld(f"Log_{len(team)}_Start_world_{start_time}.pdf")
 headers = ['Loop No.', 'Start'] + team +['Searcher', 'Targets', 'Paths', 'End']
 lookaround = [0]*len(team)
 header_write = 0
@@ -92,7 +92,7 @@ for i in range(0, 100):
         print(f"Metric parameters of consensus expriment have been updated. ")
         csvfile.close()
 
-sim_world.movements("world_Moves.pdf")
+sim_world.movements(f"Log_{len(team)}_world_Moves_{start_time}.pdf")
 poc.metric("blockchains",filename,len(team))
 poc.metric("transactions",filename,len(team))
 poc.metric("blocks",filename,len(team))
