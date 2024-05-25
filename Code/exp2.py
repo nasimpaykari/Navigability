@@ -40,7 +40,7 @@ header_write = 0
 
 for i in range(0, 100):
     print(f"\nLoop number {i} has been started: \n")
-    loop_start_time = time.ctime()
+    loop_start_time = time.time()
     for robot in team :
         num=random.randint(1,100)
         # print(F"Random number is {num} for {robot}")
@@ -78,7 +78,7 @@ for i in range(0, 100):
     # Sort shortest_paths based on the length of its elements (sublists)
     shortest_paths = sorted(shortest_paths, key=lambda x: len(x))
     print(f"Shortest paths : {shortest_paths}")
-    loop_end_time = time.ctime()
+    loop_end_time = time.time()
     with open(filename_world, 'a', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames = headers)
         if not header_write :

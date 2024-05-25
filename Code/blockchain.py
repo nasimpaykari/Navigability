@@ -106,7 +106,8 @@ class Blockchain:
            
         if len(self.pending_transactions) != 0 and (len(self.pending_transactions) >= len(self.nodes) or delta > 40):
             #start_time = time.ctime()
-            start_time = datetime.datetime.now()
+            # start_time = datetime.datetime.now()
+            start_time = time.time()
             if self.consensus == "pow" :
                 Gen_Block = self.pow_mine()        
             elif self.consensus == "pos" :
@@ -121,9 +122,10 @@ class Blockchain:
             if Success == 1:
                 print(F"The Block number {Gen_Block} was generated based on {self.consensus}")
                 #end_time = time.ctime()
-                end_time = datetime.datetime.now()
+                # end_time = datetime.datetime.now()
+                end_time = time.time()
                 duration = end_time - start_time
-                self.blockstimes[self.chain[-1].id] = [start_time,end_time,duration]
+                self.blockstimes[self.chain[-1].id] = [start_time, end_time, duration]
         Success=self.chain[-1].id-fid 
         if Success != 1 :
             # print(F"The Block is not generated yet")

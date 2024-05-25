@@ -21,7 +21,7 @@ class Block:
         self.id = id
         self.transactions = transactions
         self.navigability = navigability
-        self.timestamp = time.ctime()
+        self.timestamp = time.time()
         self.previous_hash = previous_hash
         self.miner = miner
         self.hash = self.calculate_hash()
