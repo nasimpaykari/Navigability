@@ -102,7 +102,8 @@ class Blockchain:
         Success=0
         fid=self.chain[-1].id
         Gen_Block = None
-        delta = time.mktime(time.strptime(time.ctime()))-time.mktime(time.strptime(self.latest_block().timestamp))
+        # delta = time.mktime(time.strptime(time.ctime()))-time.mktime(time.strptime(self.latest_block().timestamp))
+        delta = time.time() - self.latest_block().timestamp
            
         if len(self.pending_transactions) != 0 and (len(self.pending_transactions) >= len(self.nodes) or delta > 40):
             #start_time = time.ctime()
