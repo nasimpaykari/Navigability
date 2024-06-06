@@ -118,8 +118,8 @@ class world():
         yrange = [0, self.worldY]
 
         # Calculate maximum movement range (1/4th of the world size)
-        max_range_x = self.worldX / 4
-        max_range_y = self.worldY / 4
+        max_range_x = self.worldX / 16
+        max_range_y = self.worldY / 16
 
         # Find the specified robot
         target_robot = None
